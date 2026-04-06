@@ -1,0 +1,40 @@
+# Railway deployment configuration for the Incremental Tool backend.
+#
+# Two services share the same Docker image built from this directory:
+#   - api    → FastAPI HTTP server (uvicorn)
+#   - worker → ARQ async job worker (processes analysis jobs)
+#
+# Both services must have the same environment variables set in the
+# Railway dashboard (see .env.example for the full list).
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+# ── API service ──────────────────────────────────────────────────────────────
+[deploy]
+startCommand = "sh start.sh"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[environments.production.deploy]
+numReplicas = 1
+
+# ── Environment variables (set via Railway dashboard, not hardcoded here) ───
+# Required:
+#   DATABASE_URL          — postgresql://... (Railway Postgres plugin provides this)
+#   REDIS_URL             — redis://...      (Railway Redis plugin provides this)
+#   SUPABASE_URL          — https://xxx.supabase.co
+#   SUPABASE_ANON_KEY     — eyJ...
+#   SUPABASE_SERVICE_ROLE_KEY — eyJ...
+#   JWT_SECRET            — must match Supabase JWT secret
+#   OPENROUTER_API_KEY    — sk-or-...
+#
+# Optional:
+#   LLM_MODEL             — default: anthropic/claude-sonnet-4-5
+#   LLM_SITE_URL          — default: https://incremental-tool.terroir.com
+#   LLM_SITE_NAME         — default: Incremental Tool
+#   ENVIRONMENT           — production
+#   LOG_LEVEL             — INFO

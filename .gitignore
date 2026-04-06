@@ -1,0 +1,24 @@
+# Auth state (contains session tokens — never commit)
+e2e/.auth/
+
+# Playwright output
+e2e/test-results/
+e2e/playwright-report/
+frontend/playwright-report/
+frontend/test-results/
+
+# Backend
+backend/.env
+backend/htmlcov/
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.egg-info/
+
+# Frontend
+frontend/.env.local
+frontend/node_modules/
+frontend/.next/
+
+# OS
+.DS_Store

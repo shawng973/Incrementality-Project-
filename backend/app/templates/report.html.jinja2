@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm 20mm 18mm;
+    @bottom-center {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 9px;
+      color: #9ca3af;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    color: #111827;
+    line-height: 1.55;
+  }
+
+  /* ── Header ─────────────────────────────────────────────── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #111827;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+  }
+  .header-brand { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; color: #374151; }
+  .header-title { font-size: 20px; font-weight: 700; color: #111827; margin-top: 4px; }
+  .header-meta { font-size: 10px; color: #6b7280; margin-top: 3px; }
+  .header-date { font-size: 10px; color: #9ca3af; text-align: right; }
+
+  /* ── Verdict banner ─────────────────────────────────────── */
+  .verdict {
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+  }
+  .verdict-pass  { background: #f0fdf4; border: 1px solid #86efac; }
+  .verdict-warn  { background: #fffbeb; border: 1px solid #fcd34d; }
+  .verdict-fail  { background: #fef2f2; border: 1px solid #fca5a5; }
+  .verdict-label { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .verdict-pass  .verdict-label { color: #15803d; }
+  .verdict-warn  .verdict-label { color: #b45309; }
+  .verdict-fail  .verdict-label { color: #dc2626; }
+  .verdict-headline { font-size: 13px; font-weight: 700; margin-top: 3px; }
+
+  /* ── Stat grid ──────────────────────────────────────────── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .stat-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 10px 12px;
+    background: #f9fafb;
+  }
+  .stat-label { font-size: 9px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-value { font-size: 16px; font-weight: 700; color: #111827; margin-top: 2px; }
+  .stat-sub   { font-size: 9px; color: #9ca3af; margin-top: 1px; }
+
+  /* ── Section ────────────────────────────────────────────── */
+  .section { margin-bottom: 18px; }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+  }
+
+  /* ── Two-column layout ──────────────────────────────────── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ── Data table ─────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 10px; }
+  th { background: #f3f4f6; text-align: left; padding: 5px 8px; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb; }
+  td { padding: 5px 8px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+  tr:last-child td { border-bottom: none; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ── Flag pill ──────────────────────────────────────────── */
+  .pill {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 1px 7px;
+    font-size: 9px;
+    font-weight: 700;
+  }
+  .pill-green { background: #dcfce7; color: #15803d; }
+  .pill-yellow { background: #fef9c3; color: #b45309; }
+  .pill-red   { background: #fee2e2; color: #dc2626; }
+  .pill-gray  { background: #f3f4f6; color: #6b7280; }
+
+  /* ── Narrative ──────────────────────────────────────────── */
+  .narrative-box {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 12px 14px;
+    background: #fff;
+    font-size: 10.5px;
+    line-height: 1.65;
+    color: #374151;
+  }
+  .narrative-box p { margin-bottom: 6px; }
+  .narrative-box p:last-child { margin-bottom: 0; }
+
+  /* ── Footer ─────────────────────────────────────────────── */
+  .footer {
+    margin-top: 24px;
+    padding-top: 10px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 9px;
+    color: #9ca3af;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────── -->
+<div class="header">
+  <div>
+    <div class="header-brand">INCREMENTAL TOOL · GEO SPLIT TEST REPORT</div>
+    <div class="header-title">{{ test.name }}</div>
+    <div class="header-meta">
+      {% if test.channel %}{{ channel_label }}  ·  {% endif %}
+      {{ test.region_granularity | title }}-level  ·  {{ test.n_cells }} cells
+      {% if test.start_date and test.end_date %}  ·  {{ test.start_date }} – {{ test.end_date }}{% endif %}
+    </div>
+  </div>
+  <div class="header-date">Generated {{ generated_at }}<br>Job {{ job_id[:8] }}…</div>
+</div>
+
+<!-- ── Verdict banner ──────────────────────────────────────────────────── -->
+{% if result.is_causally_clean is not none %}
+  {% if result.is_causally_clean %}
+    <div class="verdict verdict-pass">
+      <div class="verdict-label">Verdict</div>
+      <div class="verdict-headline">Causally clean — pre-trend bias test passed</div>
+    </div>
+  {% else %}
+    <div class="verdict verdict-warn">
+      <div class="verdict-label">Verdict</div>
+      <div class="verdict-headline">Pre-trend bias detected — interpret results with caution</div>
+    </div>
+  {% endif %}
+{% elif result.parallel_trends_passes is not none %}
+  {% if result.parallel_trends_passes %}
+    <div class="verdict verdict-pass">
+      <div class="verdict-label">Parallel Trends</div>
+      <div class="verdict-headline">Parallel trends assumption holds (p = {{ "%.3f"|format(result.parallel_trends_p_value) }})</div>
+    </div>
+  {% else %}
+    <div class="verdict verdict-warn">
+      <div class="verdict-label">Parallel Trends</div>
+      <div class="verdict-headline">Parallel trends assumption may be violated (p = {{ "%.3f"|format(result.parallel_trends_p_value) }})</div>
+    </div>
+  {% endif %}
+{% endif %}
+
+<!-- ── Key metrics ─────────────────────────────────────────────────────── -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Incremental Revenue</div>
+    <div class="stat-value">{{ fmt_dollars(result.incremental_revenue_midpoint) }}</div>
+    <div class="stat-sub">midpoint estimate</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">ROAS (mid)</div>
+    <div class="stat-value">
+      {% if result.roas_mid is not none %}{{ "%.2f"|format(result.roas_mid) }}x{% else %}—{% endif %}
+    </div>
+    <div class="stat-sub">
+      {% if result.roas_low is not none and result.roas_high is not none %}
+        range {{ "%.2f"|format(result.roas_low) }}x – {{ "%.2f"|format(result.roas_high) }}x
+      {% else %}return on ad spend{% endif %}
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Spend</div>
+    <div class="stat-value">{{ fmt_dollars(result.total_spend) }}</div>
+    <div class="stat-sub">test-period media</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">TWFE p-value</div>
+    <div class="stat-value">
+      {% if result.twfe_p_value is not none %}{{ "%.4f"|format(result.twfe_p_value) }}{% else %}—{% endif %}
+    </div>
+    <div class="stat-sub">
+      {% if result.twfe_p_value is not none and result.twfe_p_value < 0.05 %}
+        <span class="pill pill-green">Significant</span>
+      {% elif result.twfe_p_value is not none %}
+        <span class="pill pill-yellow">Not significant</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ── Statistical detail ──────────────────────────────────────────────── -->
+<div class="two-col">
+
+  <!-- TWFE DiD -->
+  <div class="section">
+    <div class="section-title">TWFE Difference-in-Differences</div>
+    <table>
+      <tr><th>Metric</th><th class="num">Value</th></tr>
+      <tr>
+        <td>Treatment effect (proportion)</td>
+        <td class="num">{% if result.twfe_treatment_effect is not none %}{{ "%.4f"|format(result.twfe_treatment_effect) }}{% else %}—{% endif %}</td>
+      </tr>
+      <tr>
+        <td>Treatment effect ($)</td>
+        <td class="num">{{ fmt_dollars(result.twfe_treatment_effect_dollars) }}</td>
+      </tr>
+      <tr>
+        <td>p-value</td>
+        <td class="num">{% if result.twfe_p_value is not none %}{{ "%.4f"|format(result.twfe_p_value) }}{% else %}—{% endif %}</td>
+      </tr>
+      {% if result.twfe_ci_95 %}
+      <tr>
+        <td>95% CI</td>
+        <td class="num">[{{ "%.4f"|format(result.twfe_ci_95.lower) }}, {{ "%.4f"|format(result.twfe_ci_95.upper) }}]</td>
+      </tr>
+      {% endif %}
+      {% if result.twfe_ci_90 %}
+      <tr>
+        <td>90% CI</td>
+        <td class="num">[{{ "%.4f"|format(result.twfe_ci_90.lower) }}, {{ "%.4f"|format(result.twfe_ci_90.upper) }}]</td>
+      </tr>
+      {% endif %}
+    </table>
+  </div>
+
+  <!-- Simple DiD + YoY -->
+  <div class="section">
+    <div class="section-title">Secondary Estimates</div>
+    <table>
+      <tr><th>Metric</th><th class="num">Value</th></tr>
+      <tr>
+        <td>Simple DiD (proportion)</td>
+        <td class="num">{% if result.simple_did_estimate is not none %}{{ "%.4f"|format(result.simple_did_estimate) }}{% else %}—{% endif %}</td>
+      </tr>
+      <tr>
+        <td>Simple DiD ($)</td>
+        <td class="num">{{ fmt_dollars(result.simple_did_dollars) }}</td>
+      </tr>
+      {% if result.yoy_did_dollars is not none %}
+      <tr>
+        <td>YoY DiD ($)</td>
+        <td class="num">{{ fmt_dollars(result.yoy_did_dollars) }}</td>
+      </tr>
+      {% endif %}
+      {% if result.adjusted_yoy_did_dollars is not none %}
+      <tr>
+        <td>Adjusted YoY DiD ($)</td>
+        <td class="num">{{ fmt_dollars(result.adjusted_yoy_did_dollars) }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td>Reconciled midpoint ($)</td>
+        <td class="num">{{ fmt_dollars(result.incremental_revenue_midpoint) }}</td>
+      </tr>
+      {% if result.incremental_revenue_weighted is not none %}
+      <tr>
+        <td>Variance-weighted ($)</td>
+        <td class="num">{{ fmt_dollars(result.incremental_revenue_weighted) }}</td>
+      </tr>
+      {% endif %}
+    </table>
+  </div>
+
+</div>
+
+<!-- ── ROAS + Power ────────────────────────────────────────────────────── -->
+<div class="two-col">
+
+  {% if result.roas_mid is not none %}
+  <div class="section">
+    <div class="section-title">Bootstrap ROAS</div>
+    <table>
+      <tr><th>Scenario</th><th class="num">ROAS</th></tr>
+      <tr><td>Conservative (low)</td><td class="num">{% if result.roas_low is not none %}{{ "%.2f"|format(result.roas_low) }}x{% else %}—{% endif %}</td></tr>
+      <tr><td>Midpoint</td><td class="num">{{ "%.2f"|format(result.roas_mid) }}x</td></tr>
+      <tr><td>Optimistic (high)</td><td class="num">{% if result.roas_high is not none %}{{ "%.2f"|format(result.roas_high) }}x{% else %}—{% endif %}</td></tr>
+      {% if result.roas_ci_95 %}
+      <tr><td>95% CI</td><td class="num">[{{ "%.2f"|format(result.roas_ci_95.lower) }}x, {{ "%.2f"|format(result.roas_ci_95.upper) }}x]</td></tr>
+      {% endif %}
+    </table>
+  </div>
+  {% endif %}
+
+  {% if result.power_analysis_json %}
+  <div class="section">
+    <div class="section-title">Power Analysis</div>
+    <table>
+      <tr><th>Metric</th><th class="num">Value</th></tr>
+      <tr>
+        <td>Statistical power</td>
+        <td class="num">
+          {{ "%.1f"|format(result.power_analysis_json.power * 100) }}%
+          {% if result.power_analysis_json.is_adequately_powered %}
+            <span class="pill pill-green">Adequate</span>
+          {% else %}
+            <span class="pill pill-yellow">Underpowered</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% if result.power_analysis_json.required_weeks %}
+      <tr>
+        <td>Recommended min weeks</td>
+        <td class="num">{{ result.power_analysis_json.required_weeks }}</td>
+      </tr>
+      {% endif %}
+    </table>
+    {% if result.power_analysis_json.warning_message %}
+    <p style="margin-top:6px; font-size:9px; color:#b45309;">{{ result.power_analysis_json.warning_message }}</p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- ── AI narrative ────────────────────────────────────────────────────── -->
+{% if narrative %}
+<div class="section">
+  <div class="section-title">AI Analysis Narrative</div>
+  <div class="narrative-box">
+    {{ narrative | replace("\n\n", "</p><p>") | replace("\n", " ") | safe }}
+  </div>
+</div>
+{% endif %}
+
+<!-- ── Footer ─────────────────────────────────────────────────────────── -->
+<div class="footer">
+  <span>Incremental Tool · Terroir Agency</span>
+  <span>Confidential — for internal use only</span>
+</div>
+
+</body>
+</html>

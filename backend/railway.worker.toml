@@ -1,0 +1,14 @@
+# Railway configuration for the ARQ worker service.
+#
+# In the Railway dashboard, create a second service from the same repo,
+# point it at backend/, and set the start command below.
+# Both the api and worker services must share the same environment variables.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "python -m arq app.jobs.analysis_pipeline.WorkerSettings"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
