@@ -90,7 +90,7 @@ class WorkspaceUser(Base):
     )
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), nullable=False)
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole), nullable=False, default=UserRole.PRACTITIONER
+        Enum(UserRole, values_callable=lambda x: [e.value for e in x]), nullable=False, default=UserRole.PRACTITIONER
     )
     invited_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -111,14 +111,14 @@ class Test(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
     test_type: Mapped[TestType] = mapped_column(
-        Enum(TestType), nullable=False, default=TestType.GEO_SPLIT
+        Enum(TestType, values_callable=lambda x: [e.value for e in x]), nullable=False, default=TestType.GEO_SPLIT
     )
     status: Mapped[TestStatus] = mapped_column(
-        Enum(TestStatus), nullable=False, default=TestStatus.DRAFT
+        Enum(TestStatus, values_callable=lambda x: [e.value for e in x]), nullable=False, default=TestStatus.DRAFT
     )
     channel: Mapped[Optional[str]] = mapped_column(String)
     region_granularity: Mapped[RegionGranularity] = mapped_column(
-        Enum(RegionGranularity), nullable=False, default=RegionGranularity.STATE
+        Enum(RegionGranularity, values_callable=lambda x: [e.value for e in x]), nullable=False, default=RegionGranularity.STATE
     )
     primary_metric: Mapped[str] = mapped_column(String, nullable=False, default="revenue")
     start_date: Mapped[Optional[datetime]] = mapped_column(Date)
@@ -204,7 +204,7 @@ class AnalysisJob(Base):
         Uuid(as_uuid=True), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False
     )
     status: Mapped[JobStatus] = mapped_column(
-        Enum(JobStatus), nullable=False, default=JobStatus.PENDING
+        Enum(JobStatus, values_callable=lambda x: [e.value for e in x]), nullable=False, default=JobStatus.PENDING
     )
     triggered_by: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), nullable=False)
     enqueued_at: Mapped[datetime] = mapped_column(
