@@ -28,6 +28,8 @@ export default function LoginPage() {
       }
 
       window.location.href = "/tests";
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setIsLoading(false);
     }
