@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -100,13 +99,13 @@ export default function LoginPage() {
             </p>
           )}
 
-          <Button
+          <button
             type="submit"
-            isLoading={isLoading}
-            className="mt-6 w-full"
+            disabled={isLoading}
+            className="mt-6 w-full rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
           >
-            Sign in
-          </Button>
+            {isLoading ? "Signing in..." : "Sign in"}
+          </button>
         </form>
       </div>
     </div>
